@@ -60,10 +60,7 @@ export default {
         startDate: '',
         endDate: ''
       },
-      tickets: [
-        { id: 1, customerName: 'Nguyen Van A', flightCode: 'QA123', departure: 'Hà Nội', destination: 'TP. Hồ Chí Minh', bookingDate: '2023-12-01', seats: 2 },
-        { id: 2, customerName: 'Le Thi B', flightCode: 'QA456', departure: 'Đà Nẵng', destination: 'Hà Nội', bookingDate: '2023-12-02', seats: 1 }
-      ]
+      tickets: [] // Dữ liệu từ API sẽ được lưu ở đây
     };
   },
   computed: {
@@ -79,7 +76,19 @@ export default {
   methods: {
     applyFilter() {
       console.log('Bộ lọc đã được áp dụng:', this.filters);
+      // Không cần lọc lại dữ liệu vé ở đây vì filteredTickets đã tự động thực hiện điều này
+    },
+    async fetchTickets() {
+      try {
+        const response = await fetch('https://api.example.com/tickets'); // Thay URL giả định bằng URL API thật
+        this.tickets = await response.json();
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu vé:', error);
+      }
     }
+  },
+  mounted() {
+    this.fetchTickets(); // Gọi API khi component được mount
   }
 };
 </script>
