@@ -1,163 +1,113 @@
 <template>
-  <div class="ticket-stats-container">
-    <h1 class="stats-title">Thống kê đặt vé của khách hàng</h1>
+  <div class="admin-information">
+    <header>
+      <h1>Quản trị: Đăng thông tin</h1>
+    </header>
 
-    <!-- Bộ lọc thống kê -->
-    <div class="filters">
-      <div class="filter-group">
-        <label for="dateFrom">Từ ngày:</label>
-        <input v-model="filters.dateFrom" type="date" id="dateFrom" class="filter-input" />
-
-        <label for="dateTo">Đến ngày:</label>
-        <input v-model="filters.dateTo" type="date" id="dateTo" class="filter-input" />
-
-        <button @click="filterTickets" class="filter-button">Lọc</button>
+    <form @submit.prevent="submitInformation" class="info-form">
+      <div class="form-group">
+        <label for="title">Tiêu đề</label>
+        <input type="text" id="title" v-model="form.title" required placeholder="Nhập tiêu đề..." />
       </div>
-    </div>
 
-    <!-- Bảng thống kê đặt vé -->
-    <div v-if="loading" class="loading">
-      <p>Đang tải...</p>
-    </div>
+      <div class="form-group">
+        <label for="content">Nội dung</label>
+        <textarea id="content" v-model="form.content" required placeholder="Nhập nội dung..."></textarea>
+      </div>
 
-    <table v-else class="ticket-table">
-      <thead>
-        <tr>
-          <th>Mã đặt vé</th>
-          <th>Khách hàng</th>
-          <th>Chuyến bay</th>
-          <th>Ngày đặt</th>
-          <th>Giá vé</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="ticket in filteredTickets" :key="ticket.id">
-          <td>{{ ticket.id }}</td>
-          <td>{{ ticket.customer }}</td>
-          <td>{{ ticket.flight }}</td>
-          <td>{{ ticket.date }}</td>
-          <td>{{ ticket.price }}</td>
-        </tr>
-      </tbody>
-    </table>
+      <div class="form-group">
+        <label for="type">Loại thông tin</label>
+        <select id="type" v-model="form.type" required>
+          <option value="news">Tin tức</option>
+          <option value="promotion">Khuyến mại</option>
+          <option value="alert">Thông báo</option>
+        </select>
+      </div>
+
+      <button type="submit" class="submit-button">Đăng thông tin</button>
+    </form>
   </div>
 </template>
 
 <script>
 export default {
+  name: 'AdminInformation',
   data() {
     return {
-      tickets: [], // Dữ liệu vé đặt
-      filters: {
-        dateFrom: "",
-        dateTo: "",
-      },
-      loading: true, // Trạng thái tải dữ liệu
+      form: {
+        title: '',
+        content: '',
+        type: 'news'
+      }
     };
   },
-  computed: {
-    filteredTickets() {
-      // Lọc vé theo ngày
-      return this.tickets.filter((ticket) => {
-        const ticketDate = new Date(ticket.date);
-        const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
-        const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
-
-        return (
-          (!from || ticketDate >= from) &&
-          (!to || ticketDate <= to)
-        );
-      });
-    },
-  },
   methods: {
-  async fetchTickets() {
-    this.loading = true;
-    try {
-      const response = await fetch("/api/tickets"); // API giả định
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      this.tickets = await response.json();
-    } catch (error) {
-      console.error("Lỗi khi tải dữ liệu: ", error);
-      alert("Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.");
-    } finally {
-      this.loading = false;
-    }
-  },
-  filterTickets() {
-    console.log("Lọc vé theo ngày: ", this.filters);
-  },
-},
+    submitInformation() {
+      // Simulate sending data to backend
+      console.log('Thông tin đã được gửi:', this.form);
+      alert('Thông tin đã được đăng thành công!');
 
-  async mounted() {
-    // Tải dữ liệu khi component được mount
-    await this.fetchTickets();
-  },
+      // Reset form
+      this.form = {
+        title: '',
+        content: '',
+        type: 'news'
+      };
+    }
+  }
 };
 </script>
 
-<style>
-.ticket-stats-container {
-  max-width: 900px;
-  margin: 0 auto;
+<style scoped>
+.admin-information {
   font-family: Arial, sans-serif;
+  padding: 20px;
 }
 
-.stats-title {
+header {
   text-align: center;
-  color: #2c3e50;
   margin-bottom: 20px;
 }
 
-.filters {
-  margin-bottom: 20px;
-}
-
-.filter-group {
+.info-form {
+  max-width: 600px;
+  margin: 0 auto;
   display: flex;
-  gap: 10px;
-  align-items: center;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.filter-input {
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input, textarea, select {
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.filter-button {
-  padding: 10px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.filter-button:hover {
-  background-color: #2980b9;
-}
-
-.loading {
-  text-align: center;
-  color: #3498db;
-}
-
-.ticket-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.ticket-table th, .ticket-table td {
-  padding: 10px;
-  text-align: left;
   border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
-.ticket-table th {
-  background-color: #f8f8f8;
+textarea {
+  resize: vertical;
+}
+
+.submit-button {
+  background-color: #007BFF;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
 }
 </style>
