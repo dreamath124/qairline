@@ -72,3 +72,91 @@ export default {
         return matchesName && matchesDate;
       });
     }
+  },
+  created() {
+    this.fetchTickets();
+  },
+  methods: {
+    applyFilter() {
+      console.log('Bộ lọc đã được áp dụng:', this.filters);
+      // Không cần lọc lại dữ liệu vé ở đây vì filteredTickets đã tự động thực hiện điều này
+    },
+    async fetchTickets() {
+      try {
+        const response = await fetch('https://api.example.com/tickets'); // Thay URL giả định bằng URL API thật
+        this.tickets = await response.json();
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu vé:', error);
+      }
+    }
+  }
+};
+</script>
+
+<style scoped>
+.admin-tickets {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table th, .stats-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.stats-table th {
+  background-color: #f4f4f4;
+}
+
+.filter-button {
+  background-color: #007BFF;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter-button:hover {
+  background-color: #0056b3;
+}
+</style>
