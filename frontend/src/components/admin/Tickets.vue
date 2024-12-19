@@ -1,120 +1,82 @@
 <template>
-  <div class="admin-tickets">
+  <div class="admin-information">
     <header>
-      <h1>Thống kê đặt vé của khách hàng</h1>
+      <h1>Quản trị: Đăng thông tin</h1>
     </header>
 
-    <section class="filter-section">
-      <h2>Bộ lọc</h2>
-      <form @submit.prevent="applyFilter" class="filter-form">
-        <div class="form-group">
-          <label for="customer-name">Tên khách hàng</label>
-          <input type="text" id="customer-name" v-model="filters.customerName" placeholder="Nhập tên khách hàng..." />
-        </div>
+    <form @submit.prevent="submitInformation" class="info-form">
+      <div class="form-group">
+        <label for="title">Tiêu đề</label>
+        <input type="text" id="title" v-model="form.title" required placeholder="Nhập tiêu đề..." />
+      </div>
 
-        <div class="form-group">
-          <label for="date-range">Khoảng thời gian</label>
-          <input type="date" v-model="filters.startDate" /> -
-          <input type="date" v-model="filters.endDate" />
-        </div>
+      <div class="form-group">
+        <label for="content">Nội dung</label>
+        <textarea id="content" v-model="form.content" required placeholder="Nhập nội dung..."></textarea>
+      </div>
 
-        <button type="submit" class="filter-button">Áp dụng bộ lọc</button>
-      </form>
-    </section>
+      <div class="form-group">
+        <label for="type">Loại thông tin</label>
+        <select id="type" v-model="form.type" required>
+          <option value="news">Tin tức</option>
+          <option value="promotion">Khuyến mại</option>
+          <option value="alert">Thông báo</option>
+        </select>
+      </div>
 
-    <section class="ticket-stats">
-      <h2>Kết quả thống kê</h2>
-      <table class="stats-table">
-        <thead>
-          <tr>
-            <th>Tên khách hàng</th>
-            <th>Mã chuyến bay</th>
-            <th>Điểm đi</th>
-            <th>Điểm đến</th>
-            <th>Ngày đặt vé</th>
-            <th>Số ghế</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="ticket in filteredTickets" :key="ticket.id">
-            <td>{{ ticket.customerName }}</td>
-            <td>{{ ticket.flightCode }}</td>
-            <td>{{ ticket.departure }}</td>
-            <td>{{ ticket.destination }}</td>
-            <td>{{ ticket.bookingDate }}</td>
-            <td>{{ ticket.seats }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+      <button type="submit" class="submit-button">Đăng thông tin</button>
+    </form>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'AdminTickets',
+  name: 'AdminInformation',
   data() {
     return {
-      filters: {
-        customerName: '',
-        startDate: '',
-        endDate: ''
-      },
-      tickets: [], // Dữ liệu từ API sẽ được lưu ở đây
-      generalInfo: [], // Dữ liệu thông tin chung từ API
-      flights: [] // Dữ liệu thông tin chuyến bay từ API
+      form: {
+        title: '',
+        content: '',
+        type: 'news'
+      }
     };
   },
-  computed: {
-    filteredTickets() {
-      return this.tickets.filter(ticket => {
-        const matchesName = this.filters.customerName === '' || ticket.customerName.toLowerCase().includes(this.filters.customerName.toLowerCase());
-        const matchesDate = (!this.filters.startDate || ticket.bookingDate >= this.filters.startDate) &&
-                            (!this.filters.endDate || ticket.bookingDate <= this.filters.endDate);
-        return matchesName && matchesDate;
-      });
-    }
-  },
   methods: {
-    applyFilter() {
-      console.log('Bộ lọc đã được áp dụng:', this.filters);
-      // Không cần lọc lại dữ liệu vé ở đây vì filteredTickets đã tự động thực hiện điều này
-    },
-    async fetchTickets() {
+    async submitInformation() {
       try {
-        const response = await fetch('https://api.example.com/tickets'); // Thay URL giả định bằng URL API thật
-        this.tickets = await response.json();
+        const response = await fetch('https://api.example.com/information', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.form)
+        });
+
+        if (!response.ok) {
+          throw new Error('Lỗi khi gửi thông tin.');
+        }
+
+        const result = await response.json();
+        console.log('Thông tin đã được gửi:', result);
+        alert('Thông tin đã được đăng thành công!');
+        
+        // Reset form
+        this.form = {
+          title: '',
+          content: '',
+          type: 'news'
+        };
       } catch (error) {
-        console.error('Lỗi khi lấy dữ liệu vé:', error);
-      }
-    },
-    async fetchGeneralInfo() {
-      try {
-        const response = await fetch('https://api.example.com/general-info'); // Thay URL giả định bằng URL API thật
-        this.generalInfo = await response.json();
-      } catch (error) {
-        console.error('Lỗi khi lấy thông tin chung:', error);
-      }
-    },
-    async fetchFlights() {
-      try {
-        const response = await fetch('https://api.example.com/flights'); // Thay URL giả định bằng URL API thật
-        this.flights = await response.json();
-      } catch (error) {
-        console.error('Lỗi khi lấy thông tin chuyến bay:', error);
+        console.error('Lỗi:', error);
+        alert('Đã xảy ra lỗi khi đăng thông tin.');
       }
     }
-  },
-  mounted() {
-    this.fetchTickets(); // Gọi API khi component được mount
-    this.fetchGeneralInfo();
-    this.fetchFlights();
   }
 };
 </script>
 
 <style scoped>
-.admin-tickets {
+.admin-information {
   font-family: Arial, sans-serif;
   padding: 20px;
 }
@@ -124,16 +86,12 @@ header {
   margin-bottom: 20px;
 }
 
-.filter-section {
-  margin-bottom: 20px;
-}
-
-.filter-form {
+.info-form {
+  max-width: 600px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  max-width: 600px;
-  margin: 0 auto;
 }
 
 .form-group {
@@ -146,37 +104,27 @@ label {
   margin-bottom: 5px;
 }
 
-input {
+input, textarea, select {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.stats-table {
-  width: 100%;
-  border-collapse: collapse;
+textarea {
+  resize: vertical;
 }
 
-.stats-table th, .stats-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-}
-
-.stats-table th {
-  background-color: #f4f4f4;
-}
-
-.filter-button {
+.submit-button {
   background-color: #007BFF;
   color: white;
   padding: 10px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 16px;
 }
 
-.filter-button:hover {
+.submit-button:hover {
   background-color: #0056b3;
 }
 </style>
