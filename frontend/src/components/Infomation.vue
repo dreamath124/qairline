@@ -71,23 +71,26 @@ export default {
     },
   },
   methods: {
-    async fetchTickets() {
-      // Giả lập gọi API để tải dữ liệu đặt vé
-      this.loading = true;
-      try {
-        const response = await fetch("/api/tickets"); // API giả định
-        this.tickets = await response.json();
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu: ", error);
-      } finally {
-        this.loading = false;
+  async fetchTickets() {
+    this.loading = true;
+    try {
+      const response = await fetch("/api/tickets"); // API giả định
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    },
-    filterTickets() {
-      // Hàm thực thi lọc (thực tế đã được xử lý qua computed)
-      console.log("Lọc vé theo ngày: ", this.filters);
-    },
+      this.tickets = await response.json();
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu: ", error);
+      alert("Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.");
+    } finally {
+      this.loading = false;
+    }
   },
+  filterTickets() {
+    console.log("Lọc vé theo ngày: ", this.filters);
+  },
+},
+
   async mounted() {
     // Tải dữ liệu khi component được mount
     await this.fetchTickets();
