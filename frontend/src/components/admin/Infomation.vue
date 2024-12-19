@@ -42,17 +42,34 @@ export default {
     };
   },
   methods: {
-    submitInformation() {
-      // Simulate sending data to backend
-      console.log('Thông tin đã được gửi:', this.form);
-      alert('Thông tin đã được đăng thành công!');
+    async submitInformation() {
+      try {
+        const response = await fetch('https://api.example.com/information', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.form)
+        });
 
-      // Reset form
-      this.form = {
-        title: '',
-        content: '',
-        type: 'news'
-      };
+        if (!response.ok) {
+          throw new Error('Lỗi khi gửi thông tin.');
+        }
+
+        const result = await response.json();
+        console.log('Thông tin đã được gửi:', result);
+        alert('Thông tin đã được đăng thành công!');
+        
+        // Reset form
+        this.form = {
+          title: '',
+          content: '',
+          type: 'news'
+        };
+      } catch (error) {
+        console.error('Lỗi:', error);
+        alert('Đã xảy ra lỗi khi đăng thông tin.');
+      }
     }
   }
 };
