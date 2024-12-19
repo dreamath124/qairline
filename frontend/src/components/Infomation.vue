@@ -1,163 +1,90 @@
 <template>
-  <div class="ticket-stats-container">
-    <h1 class="stats-title">Thống kê đặt vé của khách hàng</h1>
+  <div class="information">
+    <header>
+      <h1>Thông tin chung và thông tin chuyến bay</h1>
+    </header>
 
-    <!-- Bộ lọc thống kê -->
-    <div class="filters">
-      <div class="filter-group">
-        <label for="dateFrom">Từ ngày:</label>
-        <input v-model="filters.dateFrom" type="date" id="dateFrom" class="filter-input" />
+    <section class="general-info">
+      <h2>Thông tin chung</h2>
+      <ul>
+        <li v-for="info in generalInfo" :key="info.id">{{ info.content }}</li>
+      </ul>
+    </section>
 
-        <label for="dateTo">Đến ngày:</label>
-        <input v-model="filters.dateTo" type="date" id="dateTo" class="filter-input" />
-
-        <button @click="filterTickets" class="filter-button">Lọc</button>
-      </div>
-    </div>
-
-    <!-- Bảng thống kê đặt vé -->
-    <div v-if="loading" class="loading">
-      <p>Đang tải...</p>
-    </div>
-
-    <table v-else class="ticket-table">
-      <thead>
-        <tr>
-          <th>Mã đặt vé</th>
-          <th>Khách hàng</th>
-          <th>Chuyến bay</th>
-          <th>Ngày đặt</th>
-          <th>Giá vé</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="ticket in filteredTickets" :key="ticket.id">
-          <td>{{ ticket.id }}</td>
-          <td>{{ ticket.customer }}</td>
-          <td>{{ ticket.flight }}</td>
-          <td>{{ ticket.date }}</td>
-          <td>{{ ticket.price }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <section class="flight-info">
+      <h2>Thông tin chuyến bay</h2>
+      <table class="flight-table">
+        <thead>
+          <tr>
+            <th>Mã chuyến bay</th>
+            <th>Hãng</th>
+            <th>Điểm đi</th>
+            <th>Điểm đến</th>
+            <th>Thời gian khởi hành</th>
+            <th>Thời gian đến</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="flight in flights" :key="flight.id">
+            <td>{{ flight.code }}</td>
+            <td>{{ flight.airline }}</td>
+            <td>{{ flight.departure }}</td>
+            <td>{{ flight.destination }}</td>
+            <td>{{ flight.departureTime }}</td>
+            <td>{{ flight.arrivalTime }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
   </div>
 </template>
 
 <script>
 export default {
+  name: 'Information',
   data() {
     return {
-      tickets: [], // Dữ liệu vé đặt
-      filters: {
-        dateFrom: "",
-        dateTo: "",
-      },
-      loading: true, // Trạng thái tải dữ liệu
+      generalInfo: [
+        { id: 1, content: 'QAIRLINE cung cấp các chuyến bay nội địa và quốc tế.' },
+        { id: 2, content: 'Đảm bảo an toàn và chất lượng dịch vụ.' },
+        { id: 3, content: 'Dịch vụ hỗ trợ khách hàng 24/7.' }
+      ],
+      flights: [
+        { id: 1, code: 'QA123', airline: 'QAIRLINE', departure: 'Hà Nội', destination: 'TP. Hồ Chí Minh', departureTime: '08:00 AM', arrivalTime: '10:00 AM' },
+        { id: 2, code: 'QA456', airline: 'QAIRLINE', departure: 'Đà Nẵng', destination: 'Hà Nội', departureTime: '01:00 PM', arrivalTime: '03:00 PM' }
+      ]
     };
-  },
-  computed: {
-    filteredTickets() {
-      // Lọc vé theo ngày
-      return this.tickets.filter((ticket) => {
-        const ticketDate = new Date(ticket.date);
-        const from = this.filters.dateFrom ? new Date(this.filters.dateFrom) : null;
-        const to = this.filters.dateTo ? new Date(this.filters.dateTo) : null;
-
-        return (
-          (!from || ticketDate >= from) &&
-          (!to || ticketDate <= to)
-        );
-      });
-    },
-  },
-  methods: {
-  async fetchTickets() {
-    this.loading = true;
-    try {
-      const response = await fetch("/api/tickets"); // API giả định
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      this.tickets = await response.json();
-    } catch (error) {
-      console.error("Lỗi khi tải dữ liệu: ", error);
-      alert("Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.");
-    } finally {
-      this.loading = false;
-    }
-  },
-  filterTickets() {
-    console.log("Lọc vé theo ngày: ", this.filters);
-  },
-},
-
-  async mounted() {
-    // Tải dữ liệu khi component được mount
-    await this.fetchTickets();
-  },
+  }
 };
 </script>
 
-<style>
-.ticket-stats-container {
-  max-width: 900px;
-  margin: 0 auto;
+<style scoped>
+.information {
   font-family: Arial, sans-serif;
+  padding: 20px;
 }
 
-.stats-title {
+header {
   text-align: center;
-  color: #2c3e50;
   margin-bottom: 20px;
 }
 
-.filters {
+.general-info, .flight-info {
   margin-bottom: 20px;
 }
 
-.filter-group {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.filter-input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.filter-button {
-  padding: 10px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.filter-button:hover {
-  background-color: #2980b9;
-}
-
-.loading {
-  text-align: center;
-  color: #3498db;
-}
-
-.ticket-table {
+.flight-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
 }
 
-.ticket-table th, .ticket-table td {
-  padding: 10px;
-  text-align: left;
+.flight-table th, .flight-table td {
   border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
 }
 
-.ticket-table th {
-  background-color: #f8f8f8;
+.flight-table th {
+  background-color: #f4f4f4;
 }
 </style>
