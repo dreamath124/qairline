@@ -84,7 +84,7 @@ export default {
       }
     },
     filterTickets() {
-      // Hàm thực thi lọc (thực tế đã được xử lý qua computed)
+      // Hàm thực thi lọc 
       console.log("Lọc vé theo ngày: ", this.filters);
     },
   },
