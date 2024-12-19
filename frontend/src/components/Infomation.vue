@@ -1,37 +1,48 @@
 <template>
-  <div class="information">
+  <div class="admin-tickets">
     <header>
-      <h1>Thông tin chung và thông tin chuyến bay</h1>
+      <h1>Thống kê đặt vé của khách hàng</h1>
     </header>
 
-    <section class="general-info">
-      <h2>Thông tin chung</h2>
-      <ul>
-        <li v-for="info in generalInfo" :key="info.id">{{ info.content }}</li>
-      </ul>
+    <section class="filter-section">
+      <h2>Bộ lọc</h2>
+      <form @submit.prevent="applyFilter" class="filter-form">
+        <div class="form-group">
+          <label for="customer-name">Tên khách hàng</label>
+          <input type="text" id="customer-name" v-model="filters.customerName" placeholder="Nhập tên khách hàng..." />
+        </div>
+
+        <div class="form-group">
+          <label for="date-range">Khoảng thời gian</label>
+          <input type="date" v-model="filters.startDate" /> -
+          <input type="date" v-model="filters.endDate" />
+        </div>
+
+        <button type="submit" class="filter-button">Áp dụng bộ lọc</button>
+      </form>
     </section>
 
-    <section class="flight-info">
-      <h2>Thông tin chuyến bay</h2>
-      <table class="flight-table">
+    <section class="ticket-stats">
+      <h2>Kết quả thống kê</h2>
+      <table class="stats-table">
         <thead>
           <tr>
+            <th>Tên khách hàng</th>
             <th>Mã chuyến bay</th>
-            <th>Hãng</th>
             <th>Điểm đi</th>
             <th>Điểm đến</th>
-            <th>Thời gian khởi hành</th>
-            <th>Thời gian đến</th>
+            <th>Ngày đặt vé</th>
+            <th>Số ghế</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="flight in flights" :key="flight.id">
-            <td>{{ flight.code }}</td>
-            <td>{{ flight.airline }}</td>
-            <td>{{ flight.departure }}</td>
-            <td>{{ flight.destination }}</td>
-            <td>{{ flight.departureTime }}</td>
-            <td>{{ flight.arrivalTime }}</td>
+          <tr v-for="ticket in filteredTickets" :key="ticket.id">
+            <td>{{ ticket.customerName }}</td>
+            <td>{{ ticket.flightCode }}</td>
+            <td>{{ ticket.departure }}</td>
+            <td>{{ ticket.destination }}</td>
+            <td>{{ ticket.bookingDate }}</td>
+            <td>{{ ticket.seats }}</td>
           </tr>
         </tbody>
       </table>
@@ -41,25 +52,68 @@
 
 <script>
 export default {
-  name: 'Information',
+  name: 'AdminTickets',
   data() {
     return {
-      generalInfo: [
-        { id: 1, content: 'QAIRLINE cung cấp các chuyến bay nội địa và quốc tế.' },
-        { id: 2, content: 'Đảm bảo an toàn và chất lượng dịch vụ.' },
-        { id: 3, content: 'Dịch vụ hỗ trợ khách hàng 24/7.' }
-      ],
-      flights: [
-        { id: 1, code: 'QA123', airline: 'QAIRLINE', departure: 'Hà Nội', destination: 'TP. Hồ Chí Minh', departureTime: '08:00 AM', arrivalTime: '10:00 AM' },
-        { id: 2, code: 'QA456', airline: 'QAIRLINE', departure: 'Đà Nẵng', destination: 'Hà Nội', departureTime: '01:00 PM', arrivalTime: '03:00 PM' }
-      ]
+      filters: {
+        customerName: '',
+        startDate: '',
+        endDate: ''
+      },
+      tickets: [], // Dữ liệu từ API sẽ được lưu ở đây
+      generalInfo: [], // Dữ liệu thông tin chung từ API
+      flights: [] // Dữ liệu thông tin chuyến bay từ API
     };
+  },
+  computed: {
+    filteredTickets() {
+      return this.tickets.filter(ticket => {
+        const matchesName = this.filters.customerName === '' || ticket.customerName.toLowerCase().includes(this.filters.customerName.toLowerCase());
+        const matchesDate = (!this.filters.startDate || ticket.bookingDate >= this.filters.startDate) &&
+                            (!this.filters.endDate || ticket.bookingDate <= this.filters.endDate);
+        return matchesName && matchesDate;
+      });
+    }
+  },
+  methods: {
+    applyFilter() {
+      console.log('Bộ lọc đã được áp dụng:', this.filters);
+    },
+    async fetchTickets() {
+      try {
+        const response = await fetch('https://api.example.com/tickets'); // Thay URL giả định bằng URL API thật
+        this.tickets = await response.json();
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu vé:', error);
+      }
+    },
+    async fetchGeneralInfo() {
+      try {
+        const response = await fetch('https://api.example.com/general-info'); // Thay URL giả định bằng URL API thật
+        this.generalInfo = await response.json();
+      } catch (error) {
+        console.error('Lỗi khi lấy thông tin chung:', error);
+      }
+    },
+    async fetchFlights() {
+      try {
+        const response = await fetch('https://api.example.com/flights'); // Thay URL giả định bằng URL API thật
+        this.flights = await response.json();
+      } catch (error) {
+        console.error('Lỗi khi lấy thông tin chuyến bay:', error);
+      }
+    }
+  },
+  mounted() {
+    this.fetchTickets(); // Gọi API khi component được mount
+    this.fetchGeneralInfo();
+    this.fetchFlights();
   }
 };
 </script>
 
 <style scoped>
-.information {
+.admin-tickets {
   font-family: Arial, sans-serif;
   padding: 20px;
 }
@@ -69,22 +123,59 @@ header {
   margin-bottom: 20px;
 }
 
-.general-info, .flight-info {
+.filter-section {
   margin-bottom: 20px;
 }
 
-.flight-table {
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.stats-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.flight-table th, .flight-table td {
+.stats-table th, .stats-table td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
 }
 
-.flight-table th {
+.stats-table th {
   background-color: #f4f4f4;
+}
+
+.filter-button {
+  background-color: #007BFF;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter-button:hover {
+  background-color: #0056b3;
 }
 </style>
