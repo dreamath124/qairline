@@ -60,7 +60,9 @@ export default {
         startDate: '',
         endDate: ''
       },
-      tickets: [] // Dữ liệu từ API sẽ được lưu ở đây
+      tickets: [], // Dữ liệu từ API sẽ được lưu ở đây
+      generalInfo: [], // Dữ liệu thông tin chung từ API
+      flights: [] // Dữ liệu thông tin chuyến bay từ API
     };
   },
   computed: {
@@ -85,10 +87,28 @@ export default {
       } catch (error) {
         console.error('Lỗi khi lấy dữ liệu vé:', error);
       }
+    },
+    async fetchGeneralInfo() {
+      try {
+        const response = await fetch('https://api.example.com/general-info'); // Thay URL giả định bằng URL API thật
+        this.generalInfo = await response.json();
+      } catch (error) {
+        console.error('Lỗi khi lấy thông tin chung:', error);
+      }
+    },
+    async fetchFlights() {
+      try {
+        const response = await fetch('https://api.example.com/flights'); // Thay URL giả định bằng URL API thật
+        this.flights = await response.json();
+      } catch (error) {
+        console.error('Lỗi khi lấy thông tin chuyến bay:', error);
+      }
     }
   },
   mounted() {
     this.fetchTickets(); // Gọi API khi component được mount
+    this.fetchGeneralInfo();
+    this.fetchFlights();
   }
 };
 </script>
